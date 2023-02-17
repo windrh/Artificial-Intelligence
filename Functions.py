@@ -184,25 +184,27 @@ def forward_prop(name_of_model_variable,input_data):
     return activated_nodes_list
 
 
-#backpropogates a model
+#backpropogates a model given the variable name of the A.I. model, a desired learning rate, how many iterations you want to backprop, initial input data, and correct output data.
+    #returns nothing, however it updates the A.I. model that it is given within local computer storage. MUST STORE THE NEW MODEL SOMEWHERE FOR IT TO BE ACCESSIBLE AGAIN
 def backprop(models_variable_name,learning_rate,iterations,inputdata,correct_output_data):
-    #final model given to us by forward propagation
+    #outcome of forward propagation for error calculations
     inputresult = forward_prop(models_variable_name,inputdata)
 
     #actual class definition for the nodes we use to find derivatives dynamically
     class Node(object):
-        def __init__(self,activated_value,activation_function,incominglist,outgoinglist,x,y,nodelistvarname,end = False):
-            self.activated_value = activated_value #INT
-            self.activation_function = activation_function #INT
-            self.incominglist = incominglist #LIST
-            self.outgoinglist = outgoinglist #LIST
-            self.x = x #INT
-            self.y = y #INT
-            self.end = end
-            self.storage = []
-            self.deactivatedvalue = self.valuefinder(self.activation_function, self.activated_value)
-            self.nodelistvarname = nodelistvarname
+        def __init__(self,activated_value,activation_function,incominglist,outgoinglist,name_of_list,x,y,end = False):
+            self.activated_value = activated_value #INT | actual output of the node
+            self.activation_function = activation_function #INT | abstract values of 0 or 1 that correspond to LeakyRelu or Sigmoid
+            self.incominglist = incominglist #LIST | each list inside this list are coordinates inside to weights within the given model
+            self.outgoinglist = outgoinglist #LIST | each list inside this list are coordinates inside to weights within the given model
+            self.x = x #INT | abstract value for human purposes of creating the nodes
+            self.y = y #INT | abstract value for human purposes of creating the nodes
+            self.end = end #BOOL | a simple boolean value to mark whether this node is at the end of the model, useful for determining whether to send out data to child nodes or not
+            self.storage = [] #LIST | acts as a temporary place to hold incoming data and to send it out, can be cleared because intrinsic data is stored in other object attributes
+            self.deactivatedvalue = self.valuefinder(self.activation_function, self.activated_value) #Derivative of the node's final output for gradient calculations
+            self.name_of_list = name_of_list #VARIABLE | this variable represents the list that this class is being stored into
 
+        #simple function to calculate the derivative of the activated value needed for the gradient
         def valuefinder(self,act_funct,act_value):
             if act_funct == 0:
                 return dLeakyReLU(act_value)
@@ -211,26 +213,26 @@ def backprop(models_variable_name,learning_rate,iterations,inputdata,correct_out
             else:
                 print("error in valuefinder function")
 
+        #class method to turn self.end true from the outside
         def turnonend(self):
             self.end = True
 
-        #function creates a list of all nodes with matching incoming lists from self.outgoinglist.
-            #function then determines what to add to self.storage
-                #function sends the values to the selected nodes
+        #part of a semi-recursive structure for finding the derivatives through the network for an A.I.
         def sendout(self):
-            for element in self.nodelistvarname: #searches the all nodes
-                for item in element.outgoinglist: #for every item in a node's outgoing list
-                    for item2 in self.outgoinglist: #for every item in self.outgoinglist
-                        if item == item2: #trying to see if there is a match of items, meaning there is a connection
-                            templist = []
-                            for value in self.storage:
+            for element in self.name_of_list: #searches the all nodes
+                for item in element.incominglist: #searches that specific node's incoming list
+                    for item2 in self.outgoinglist: #searches its own outgoing list
+                        if item == item2: #match of items = there is a 'connection' for data values to be sent
+                            templist = [] #creates a temporary list for sending out values
+                            for value in self.storage: #appends currently stored values in the list
                                 templist.append(value)
-                            templist.append(self.deactivatedvalue)
-                            templist.append(item)
-                            element.accept(templist)
-                            templist.clear()
+                            templist.append(self.deactivatedvalue) #appends its own data, this is the derivative of activation function
+                            templist.append(item) #appends its own data part 2, this data is the specific WEIGHT coordinate for backprop
+                            element.accept(templist) #calls on the matching node's "accept" function to transfer data
+                            templist.clear() #clears out list to reduce memory usage
+            self.storage.clear() # clears out the storage so that future items can be stored in later derivative calculations
 
-        #this function call determines conditonally whether to pursue sending out values to continue the chain of derivatives
+        #this function call determines conditionally whether to pursue sending out values to continue the chain of derivatives
         def propagate(self):
             if self.end == False:
                 self.sendout()
@@ -240,7 +242,6 @@ def backprop(models_variable_name,learning_rate,iterations,inputdata,correct_out
             for element in listinput:
                 self.storage.append(element)
             self.propagate()
-
 
     #creating a list of node values so that we can use them as objects
     #need to make a quick for and if loop to turn on the end boolean for nodes using max x value
