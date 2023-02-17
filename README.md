@@ -13,6 +13,6 @@ This folder is a module in itself for the client end program to use for actual A
 
 Release Version - Date Released - Brief Description of the Release 
 
-Release 0.1 - 2/14/2023 - First, non workable project is uploaded into Github. \n
+Release 0.1 - 2/14/2023 - First, non workable project is uploaded into Github. 
 
 Release 0.2 - 2/16/2023 - Updates the comments of backpropagation in order to show what is happening on an abstract level with my "Node" class 
