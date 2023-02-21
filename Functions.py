@@ -246,6 +246,21 @@ def backprop(models_variable_name,learning_rate,iterations,inputdata,correct_out
     #creating a list of node values so that we can use them as objects
     #need to make a quick for and if loop to turn on the end boolean for nodes using max x value
     node_list = []
-    for x in inputresult:
-        for y in x:
+
+    # EXAMPLE OF INPUTRESULT: [[A,B,C],[A2,B2,C2]...]
+    for x in range(len(inputresult)):  # EXAMPLE OF X: [A,B,C,D..]
+        for y in range(x):  # EXAMPLE OF Y: A
+            temporarylist_incoming = []
+            temporarylist_outgoing = []
+            for i in range(len(models_variable_name[1][x][y])): #incoming list for the node
+                temporarylist_incoming.append((x,y,i))
+                print("Done")
+            endbool = False
+            if x < len(inputresult):
+                for i2 in range(len(models_variable_name[1][x+1][y])): #we have a little bit of an error right here but that is for later!! how fun
+                    temporarylist_outgoing.append((x+1,y,i2)) #outgoing list for the node
+            elif x == len(inputresult):
+                endbool == True
+            node_list.append(Node(inputresult[x][y],models_variable_name[2][x],temporarylist_incoming.copy(),temporarylist_outgoing.copy(),node_list,x,y,endbool))
+
 
