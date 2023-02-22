@@ -243,24 +243,32 @@ def backprop(models_variable_name,learning_rate,iterations,inputdata,correct_out
                 self.storage.append(element)
             self.propagate()
 
-    #creating a list of node values so that we can use them as objects
-    #need to make a quick for and if loop to turn on the end boolean for nodes using max x value
-    node_list = []
 
-    # EXAMPLE OF INPUTRESULT: [[A,B,C],[A2,B2,C2]...]
-    for x in range(len(inputresult)):  # EXAMPLE OF X: [A,B,C,D..]
-        for y in range(x):  # EXAMPLE OF Y: A
+    #building the list of nodes to be used as objects
+    node_list = []
+    for x in range(len(inputresult)):
+        for y in range(len(inputresult[x])):
+            #temporary list storage for building nodes
             temporarylist_incoming = []
             temporarylist_outgoing = []
-            for i in range(len(models_variable_name[1][x][y])): #incoming list for the node
-                temporarylist_incoming.append((x,y,i))
-                print("Done")
-            endbool = False
-            if x < len(inputresult):
-                for i2 in range(len(models_variable_name[1][x+1][y])): #we have a little bit of an error right here but that is for later!! how fun
-                    temporarylist_outgoing.append((x+1,y,i2)) #outgoing list for the node
-            elif x == len(inputresult):
-                endbool == True
-            node_list.append(Node(inputresult[x][y],models_variable_name[2][x],temporarylist_incoming.copy(),temporarylist_outgoing.copy(),node_list,x,y,endbool))
+
+            #building the incoming list of weight coords -> no if statements because nodes always start with a weight in front of them
+            for i in range(len(models_variable_name[1][x])):
+                temporarylist_incoming.append((x,i,y))
+                #print("Incoming Done: " + str(x) + "," + str(i) + "," + str(y))  -> test cases for development and error handling 
+
+            #building the outgoing list -> need a conditional statement because the final node has no output weights, it's own activated value is the answer of the A.I.
+            if x < len(inputresult)-1:
+                for t in range(len(models_variable_name[1][x+1])):
+                    temporarylist_outgoing.append((x+1,y,t))
+                   #print("Outgoing Done: " + str(x+1) + "," + str(y) + "," + str(t)) -> test cases for development and error handling 
+
+            #formally builds the nodes
+            node_list.append(Node(inputresult[x][y], models_variable_name[2][x], temporarylist_incoming.copy(), temporarylist_outgoing.copy(), node_list, x, y))
+
+            #turns on the end_bool to show that the tree is done when recursion occurs
+            for element in node_list:
+                if len(element.outgoinglist) == 0:
+                    element.turnonend()
 
 
