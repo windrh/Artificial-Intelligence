@@ -15,6 +15,6 @@ Release Version - Date Released - Brief Description of the Release
 
 Release 0.1.0 - 2/14/2023 - First code is uploaded into Github, includes methods for my A.I. model variables, working forward propagation, and in-development          backpropagation. 
 
-Release 0.1.2 - 2/16/2023 - Updates the comments of backpropagation in order to show what is happening on an abstract level with my "Node" class. 
+Release 0.1.1 - 2/16/2023 - Updates the comments of backpropagation in order to show what is happening on an abstract level with my "Node" class. 
 
-Release 0.1.3 - 2/22/2023 - FUNCTION(backprop) updated: a single iteration of nodes can now be developed successfully based on the model. This is critical for finding derivatives dynamically. 
+Release 0.1.2 - 2/22/2023 - FUNCTION(backprop) updated: a single iteration of nodes can now be developed successfully based on the model. This is critical for finding derivatives dynamically. 
