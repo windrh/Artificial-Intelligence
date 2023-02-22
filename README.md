@@ -17,4 +17,4 @@ Release 0.1 - 2/14/2023 - First code is uploaded into Github, includes methods f
 
 Release 0.2 - 2/16/2023 - Updates the comments of backpropagation in order to show what is happening on an abstract level with my "Node" class. 
 
-Release 0.2.1 - 2/22/2023 - FUNCTION(backprop) updated: a single iteration of nodes can now be developed successfully based on the model. This is critical for finding derivatives iteratively. 
+Release 0.2.1 - 2/22/2023 - FUNCTION(backprop) updated: a single iteration of nodes can now be developed successfully based on the model. This is critical for finding derivatives dynamically. 
