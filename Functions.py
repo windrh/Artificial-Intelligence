@@ -187,88 +187,140 @@ def forward_prop(name_of_model_variable,input_data):
 #backpropogates a model given the variable name of the A.I. model, a desired learning rate, how many iterations you want to backprop, initial input data, and correct output data.
     #returns nothing, however it updates the A.I. model that it is given within local computer storage. MUST STORE THE NEW MODEL SOMEWHERE FOR IT TO BE ACCESSIBLE AGAIN
 def backprop(models_variable_name,learning_rate,iterations,inputdata,correct_output_data):
-    #outcome of forward propagation for error calculations
-    inputresult = forward_prop(models_variable_name,inputdata)
 
-    #actual class definition for the nodes we use to find derivatives dynamically
-    class Node(object):
-        def __init__(self,activated_value,activation_function,incominglist,outgoinglist,name_of_list,x,y,end = False):
-            self.activated_value = activated_value #INT | actual output of the node
-            self.activation_function = activation_function #INT | abstract values of 0 or 1 that correspond to LeakyRelu or Sigmoid
-            self.incominglist = incominglist #LIST | each list inside this list are coordinates inside to weights within the given model
-            self.outgoinglist = outgoinglist #LIST | each list inside this list are coordinates inside to weights within the given model
-            self.x = x #INT | abstract value for human purposes of creating the nodes
-            self.y = y #INT | abstract value for human purposes of creating the nodes
-            self.end = end #BOOL | a simple boolean value to mark whether this node is at the end of the model, useful for determining whether to send out data to child nodes or not
-            self.storage = [] #LIST | acts as a temporary place to hold incoming data and to send it out, can be cleared because intrinsic data is stored in other object attributes
-            self.deactivatedvalue = self.valuefinder(self.activation_function, self.activated_value) #Derivative of the node's final output for gradient calculations
-            self.name_of_list = name_of_list #VARIABLE | this variable represents the list that this class is being stored into
+    for iteration in range(iterations):
+        #outcome of forward propagation for error calculations
+        inputresult = forward_prop(models_variable_name,inputdata)
 
-        #simple function to calculate the derivative of the activated value needed for the gradient
-        def valuefinder(self,act_funct,act_value):
-            if act_funct == 0:
-                return dLeakyReLU(act_value)
-            elif act_funct == 1:
-                return dsigmoid(act_value)
-            else:
-                print("error in valuefinder function")
+        errorlist = [] #this is now a list of error, with [0] being the error for a node: x = max, y = 0, and so on....
+        #actual error calculations
+        for mark in range(len(inputresult[-1])):
+            errorlist.append(2 * (inputresult[-1][mark] - correct_output_data[mark]))
 
-        #class method to turn self.end true from the outside
-        def turnonend(self):
-            self.end = True
+        #actual class definition for the nodes we use to find derivatives dynamically
+        class Node(object):
+            def __init__(self,activated_value,activation_function,incominglist,outgoinglist,name_of_node_list,name_of_value_storage_list,x,y,end = False):
+                self.activated_value = activated_value #INT | actual output of the node
+                self.activation_function = activation_function #INT | abstract values of 0 or 1 that correspond to LeakyRelu or Sigmoid
+                self.incominglist = incominglist #LIST | each list inside this list are coordinates inside to weights within the given model
+                self.outgoinglist = outgoinglist #LIST | each list inside this list are coordinates inside to weights within the given model
+                self.x = x #INT | abstract value for human purposes of creating the nodes
+                self.y = y #INT | abstract value for human purposes of creating the nodes
+                self.end = end #BOOL | a simple boolean value to mark whether this node is at the end of the model, useful for determining whether to send out data to child nodes or not
+                self.storage = [] #LIST | acts as a temporary place to hold incoming data and to send it out, can be cleared because intrinsic data is stored in other object attributes
+                self.deactivatedvalue = self.valuefinder(self.activation_function, self.activated_value) #Derivative of the node's final output for gradient calculations
+                self.name_of_node_list = name_of_node_list #VARIABLE | this variable represents the list that this class is being stored into
+                self.name_of_value_storage_list = name_of_value_storage_list
 
-        #part of a semi-recursive structure for finding the derivatives through the network for an A.I.
-        def sendout(self):
-            for element in self.name_of_list: #searches the all nodes
-                for item in element.incominglist: #searches that specific node's incoming list
-                    for item2 in self.outgoinglist: #searches its own outgoing list
-                        if item == item2: #match of items = there is a 'connection' for data values to be sent
-                            templist = [] #creates a temporary list for sending out values
-                            for value in self.storage: #appends currently stored values in the list
-                                templist.append(value)
-                            templist.append(self.deactivatedvalue) #appends its own data, this is the derivative of activation function
-                            templist.append(item) #appends its own data part 2, this data is the specific WEIGHT coordinate for backprop
-                            element.accept(templist) #calls on the matching node's "accept" function to transfer data
-                            templist.clear() #clears out list to reduce memory usage
-            self.storage.clear() # clears out the storage so that future items can be stored in later derivative calculations
+            #simple function to calculate the derivative of the activated value needed for the gradient
+            def valuefinder(self,act_funct,act_value):
+                if act_funct == 0:
+                    return dLeakyReLU(act_value)
+                elif act_funct == 1:
+                    return dsigmoid(act_value)
+                else:
+                    print("error in valuefinder function inside of the Node class")
 
-        #this function call determines conditionally whether to pursue sending out values to continue the chain of derivatives
-        def propagate(self):
-            if self.end == False:
-                self.sendout()
+            #class method to turn self.end true from the outside
+            def turnonend(self):
+                self.end = True
 
-        #accepts a list of coordinates and deactivated values into self.storage for future functions
-        def accept(self,listinput):
-            for element in listinput:
-                self.storage.append(element)
-            self.propagate()
+            #part of a semi-recursive structure for finding the derivatives through the network for an A.I.
+            def sendout(self):
+                for element in self.name_of_node_list: #searches the all nodes
+                    for item in element.incominglist: #searches that specific node's incoming list
+                        for item2 in self.outgoinglist: #searches its own outgoing list
+                            if item == item2: #match of items = there is a 'connection' for data values to be sent
+                                templist = [] #creates a temporary list for sending out values
+                                for value in self.storage: #appends currently stored values in the list
+                                    templist.append(value)
+                                templist.append(self.deactivatedvalue) #appends its own data, this is the derivative of activation function
+                                templist.append(item) #appends its own data part 2, this data is the specific WEIGHT coordinate for backprop
+                                element.accept(templist.copy()) #calls on the matching node's "accept" function to transfer data
+                                templist.clear() #clears out list to reduce memory usage
+                self.storage.clear() # clears out the storage so that future items can be stored in later derivative calculations
+
+            #this function call determines conditionally whether to pursue sending out values to continue the chain of derivatives
+            def propagate(self):
+                if not self.end:
+                    self.sendout()
+                if self.end:
+                    self.storage.append(self.deactivatedvalue)
+                    derivvalue = 1
+                    temporarycalculationlist = []
+                    for item in self.storage:
+                        if type(item) == tuple or type(item) == list:
+                            temporarycalculationlist.append(models_variable_name[1][item[0]][item[1]][item[2]])
+                        else:
+                            temporarycalculationlist.append(item)
+                    for calculation in temporarycalculationlist:
+                        derivvalue = derivvalue * calculation
+                    derivvalue = derivvalue * errorlist[self.y] #REFERENCING A LIST OUTSIDE OF THE CLASS SELF INPUT - NO ISSUE JUST A LITTLE WEIRD
+                    self.name_of_value_storage_list.append(derivvalue)
+                    self.storage.clear()
+
+            #accepts a list of coordinates and deactivated values into self.storage for future functions
+            def accept(self,listinput):
+                for element in listinput:
+                    self.storage.append(element)
+                self.propagate()
 
 
-    #building the list of nodes to be used as objects
-    node_list = []
-    for x in range(len(inputresult)):
-        for y in range(len(inputresult[x])):
-            #temporary list storage for building nodes
-            temporarylist_incoming = []
-            temporarylist_outgoing = []
+        #building the list of nodes to be used as objects
+        node_list = []
+        value_storage_list = [] #all of the derivative pathways must be added up into one to achieve a single weights derivative, so this is where it happens once the end of the network in finally reached.
+        for x in range(len(inputresult)):
+            for y in range(len(inputresult[x])):
+                #temporary list storage for building nodes
+                temporarylist_incoming = []
+                temporarylist_outgoing = []
 
-            #building the incoming list of weight coords -> no if statements because nodes always start with a weight in front of them
-            for i in range(len(models_variable_name[1][x])):
-                temporarylist_incoming.append((x,i,y))
-                #print("Incoming Done: " + str(x) + "," + str(i) + "," + str(y))  -> test cases for development and error handling 
+                #building the incoming list of weight coords -> no if statements because nodes always start with a weight in front of them
+                for i in range(len(models_variable_name[1][x])):
+                    temporarylist_incoming.append((x,i,y))
+                    #print("Incoming Done: " + str(x) + "," + str(i) + "," + str(y))  -> test cases for development and error handling
 
-            #building the outgoing list -> need a conditional statement because the final node has no output weights, it's own activated value is the answer of the A.I.
-            if x < len(inputresult)-1:
-                for t in range(len(models_variable_name[1][x+1])):
-                    temporarylist_outgoing.append((x+1,y,t))
-                   #print("Outgoing Done: " + str(x+1) + "," + str(y) + "," + str(t)) -> test cases for development and error handling 
+                #building the outgoing list -> need a conditional statement because the final node has no output weights, it's own activated value is the answer of the A.I.
+                if x < len(inputresult)-1:
+                    for t in range(len(models_variable_name[1][x+1])):
+                        temporarylist_outgoing.append((x+1,y,t))
+                       #print("Outgoing Done: " + str(x+1) + "," + str(y) + "," + str(t)) -> test cases for development and error handling
 
-            #formally builds the nodes
-            node_list.append(Node(inputresult[x][y], models_variable_name[2][x], temporarylist_incoming.copy(), temporarylist_outgoing.copy(), node_list, x, y))
+                #formally builds the nodes
+                node_list.append(Node(inputresult[x][y], models_variable_name[2][x], temporarylist_incoming.copy(), temporarylist_outgoing.copy(), node_list, value_storage_list, x, y))
 
-            #turns on the end_bool to show that the tree is done when recursion occurs
-            for element in node_list:
-                if len(element.outgoinglist) == 0:
-                    element.turnonend()
+                #turns on the end_bool to show that the tree is done when recursion occurs
+                for element in node_list:
+                    if len(element.outgoinglist) == 0:
+                        element.turnonend()
+
+        alpha_gradient = [] #overall weight list, but this is it's gradient
+        for x in range(len(models_variable_name[1])): #x represents the matrix number
+            temporarylist = [] #each matrix
+            for y in range(len(models_variable_name[1][x])): #y represents the row
+                temporarylist2 = [] #each row
+                for k in range(len(models_variable_name[1][x][y])): #k represents the column
+                    for node in node_list: #for each node
+                        for item in node.incominglist: #search that node's items in the incoming list
+                            if item == (x,y,k): #if we have a match from the weight we are finding the derivative for, we then make the node accept it
+                                node.accept([(x,y,k)])
+                    tempvalue = 0
+                    for value in value_storage_list: #must make sure an actual value is in value storage list: more manipulation on the node class part to make them append just values now...
+                        tempvalue += value
+                    value_storage_list.clear()
+                    temporarylist2.append(tempvalue * learning_rate)
+                temporarylist.append(temporarylist2.copy())
+                temporarylist2.clear()
+            alpha_gradient.append(temporarylist.copy())
+            temporarylist.clear()
+
+        #updating the weights according to their gradient
+        for x in range(len(models_variable_name[1])):
+            for y in range(len(models_variable_name[1][x])):
+                for i in range(len(models_variable_name[1][x][y])):
+                    models_variable_name[1][x][y][i] = models_variable_name[1][x][y][i] * alpha_gradient[x][y][i]
+
+        node_list.clear()
+
 
 
