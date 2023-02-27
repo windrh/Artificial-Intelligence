@@ -318,7 +318,7 @@ def backprop(models_variable_name,learning_rate,iterations,inputdata,correct_out
         for x in range(len(models_variable_name[1])):
             for y in range(len(models_variable_name[1][x])):
                 for i in range(len(models_variable_name[1][x][y])):
-                    models_variable_name[1][x][y][i] = models_variable_name[1][x][y][i] * alpha_gradient[x][y][i]
+                    models_variable_name[1][x][y][i] = models_variable_name[1][x][y][i] + (-alpha_gradient[x][y][i])
 
         node_list.clear()
 
