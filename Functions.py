@@ -186,16 +186,29 @@ def forward_prop(name_of_model_variable,input_data):
 
 #backpropogates a model given the variable name of the A.I. model, a desired learning rate, how many iterations you want to backprop, initial input data, and correct output data.
     #returns nothing, however it updates the A.I. model that it is given within local computer storage. MUST STORE THE NEW MODEL SOMEWHERE FOR IT TO BE ACCESSIBLE AGAIN
-def backprop(models_variable_name,learning_rate,iterations,inputdata,correct_output_data):
-
-    for iteration in range(iterations):
+def backprop(models_variable_name,learning_rate,inputdata,correct_output_data,percent_error_stop_threshold):
+    error = False
+    while not error:
         #outcome of forward propagation for error calculations
         inputresult = forward_prop(models_variable_name,inputdata)
 
+        # actual error calculations and associated methods of dealing with utilizing backpropagation and it's error
         errorlist = [] #this is now a list of error, with [0] being the error for a node: x = max, y = 0, and so on....
-        #actual error calculations
+        percent_error_list = [] #this list for determining if the while loop should be stopped
         for mark in range(len(inputresult[-1])):
-            errorlist.append(2 * (inputresult[-1][mark] - correct_output_data[mark]))
+            errorlist.append(inputresult[-1][mark] - correct_output_data[mark])
+            percent_error_list.append(abs((inputresult[-1][mark] - correct_output_data[mark])/correct_output_data[mark])*100)
+        for output in inputresult[-1]:
+            if type(output) != int and type(output) != float:
+                print("Breaking Backpropagation Sequence: NaN Achieved... ")
+                return None
+        #simple if statements to determine if the backpropagation should stop
+        errorpercentagethreshholdcount = 0
+        for errorvalue in percent_error_list:
+            if errorvalue > percent_error_stop_threshold:
+                errorpercentagethreshholdcount += 1
+        if errorpercentagethreshholdcount == 0:
+            error = True
 
         #actual class definition for the nodes we use to find derivatives dynamically
         class Node(object):
@@ -218,8 +231,6 @@ def backprop(models_variable_name,learning_rate,iterations,inputdata,correct_out
                     return dLeakyReLU(act_value)
                 elif act_funct == 1:
                     return dsigmoid(act_value)
-                else:
-                    print("error in valuefinder function inside of the Node class")
 
             #class method to turn self.end true from the outside
             def turnonend(self):
@@ -318,9 +329,7 @@ def backprop(models_variable_name,learning_rate,iterations,inputdata,correct_out
         for x in range(len(models_variable_name[1])):
             for y in range(len(models_variable_name[1][x])):
                 for i in range(len(models_variable_name[1][x][y])):
-                    models_variable_name[1][x][y][i] = models_variable_name[1][x][y][i] + (-alpha_gradient[x][y][i])
+                    models_variable_name[1][x][y][i] = models_variable_name[1][x][y][i] - alpha_gradient[x][y][i]
 
         node_list.clear()
-
-
-
+        alpha_gradient.clear()
