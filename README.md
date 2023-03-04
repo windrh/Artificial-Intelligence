@@ -24,3 +24,5 @@ Release 0.2.0 - 2/26/2023 - FUNCTION(backprop) UPDATED: now working. For any ran
 Release 0.2.1 - 2/27/2023 - FUNCTION(backprop) UPDATED: bug was found. backprop now successfully does it's job of training the model to given specifications. 
 
 Release 0.2.2 - 2/27/2023 - FUNCTION(backprop) UPDATED: iteration parameter taken away, instead it now accepts an error percentage that the calculations work up agianst. Testing of the actual backpropagation function is sucessful so far in simulating addition, subtraction, multiplication, and division. It is noteable that you must find a sweet spot regarding the number of nodes that you give to the backpropagation algorithm. Too little or too many and the calculations will fail. 
+
+Release 1.2.2 - 3/4/2023 - Text line application released for manipulation of A.I. training. Check it out. It allows you to work in memory with some simple commands. Updates: FUNCTION(backprop) has iteration parameter brought back. Guide.txt is just for use with the Text Line application. Backpropagation is semi-functional but after additional research I found out I was not accounting for a couple things inside of the backpropagation algorithm. 
