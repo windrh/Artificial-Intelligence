@@ -31,7 +31,7 @@ def dsigmoid(x):
 
 #gives a random weight initialization according to the Xiaver Weight Distribution Formula
 def weight_initialization(number_of_input_nodes):
-    x = -(1 / math.sqrt(number_of_input_nodes))
+    x = -(1 / math.sqrt(number_of_input_nodes)) #for some reason... removing the negative weights helped??
     y = (1 / math.sqrt(number_of_input_nodes))
     return random.uniform(x, y)
 
@@ -94,36 +94,59 @@ def store_model(filename,model):
     a.write(str(model))
     a.close()
 
-#this function returns 0 if there is no file given, and if there is a file given it returns a filename.
-def inquire_data(answer = None):
-    if answer is None:
-        return 0
-    else:
-        return answer
-
 #This function takes an input which tell it to take in parameters to generate a new model or read a pre-exisitng model.
 def produce_data(number):
     if number == 0:
-        print("Creating new model for the neural network... \n")
-        print("Input the following values in respect to the order given below:")
-        print("number of inputs,length of hidden layers,number of outputs,number of hidden layers")
-        parameters = input("Paramters: ")
+        print("Creating new model... \n")
+        print("Input the following parameters in respect to the order given below:")
+        print("Number of inputs,Length of hidden layers,Number of outputs,Number of hidden layers")
+        parameters = input("\nParamters: ")
+        check = False
+        alphabetlist = 'abcdefghijklmnopqrstuvwxyz'
+        while check == False:
+            errorcount = 0
+            for element in parameters.split(","):
+                if len(element) != 1:
+                    errorcount += 1
+                    break
+                if alphabetlist.find(element) > -1:
+                    errorcount += 1
+                else:
+                    if int(element) == 0:
+                        errorcount += 1
+            if len(parameters.split(",")) != 4 or errorcount > 0:
+                print("Incorrect values entered... please try again.")
+                parameters = input("\nParamters: ")
+            else:
+                check = True
         newparam = parameters.split(",")
-        print("\nInput order of activation functions in a single string, " + str(int(newparam[3])+1) + " long, of numbers according to the following guide:")
+        print("\nInput order of activation functions per hidden layer in a single string, " + str(int(newparam[3])+1) + " long, of numbers according to the following guide:")
         print("0 for LeakyRelu")
         print("1 for Sigmoid")
         finallist = []
         finallist.append(initialize_starting_biases(int(newparam[0]),int(newparam[2]),int(newparam[1]),int(newparam[3])))
         finallist.append(initialize_starting_weights(int(newparam[0]),int(newparam[1]),int(newparam[2]),int(newparam[3])))
-        activefunct = input("Activation function string: ")
+        activefunct = input("\nActivation Functions: ")
+        ncheck = False
+        while ncheck == False:
+            zerocheck = 0
+            for element in activefunct:
+                if alphabetlist.find(element) > -1:
+                    zerocheck += 1
+                else:
+                    if type(int(element)) != int:
+                        zerocheck += 1
+            if len(activefunct) != int(newparam[3])+1 or zerocheck != 0:
+                print("Incorrect amount of numbers entered... please try again.")
+                activefunct = input("\nActivation Functions: ")
+            else:
+                ncheck = True
         templist = []
         for elem in activefunct:
             templist.append(int(elem))
         finallist.append(templist)
-        print("\nModel initialized successfully")
         return finallist
     else:
-        print("Model read successfully")
         return read_model(number)
 
 #GROUP FUNCTIONS
@@ -186,8 +209,9 @@ def forward_prop(name_of_model_variable,input_data):
 
 #backpropogates a model given the variable name of the A.I. model, a desired learning rate, how many iterations you want to backprop, initial input data, and correct output data.
     #returns nothing, however it updates the A.I. model that it is given within local computer storage. MUST STORE THE NEW MODEL SOMEWHERE FOR IT TO BE ACCESSIBLE AGAIN
-def backprop(models_variable_name,learning_rate,inputdata,correct_output_data,percent_error_stop_threshold):
+def backprop(models_variable_name,learning_rate,inputdata,correct_output_data,percent_error_stop_threshold,iteration):
     error = False
+    iterations = 0
     while not error:
         #outcome of forward propagation for error calculations
         inputresult = forward_prop(models_variable_name,inputdata)
@@ -200,7 +224,7 @@ def backprop(models_variable_name,learning_rate,inputdata,correct_output_data,pe
             percent_error_list.append(abs((inputresult[-1][mark] - correct_output_data[mark])/correct_output_data[mark])*100)
         for output in inputresult[-1]:
             if type(output) != int and type(output) != float:
-                print("Breaking Backpropagation Sequence: NaN Achieved... ")
+                print("Breaking backpropagation: NaN achieved... ")
                 return None
         #simple if statements to determine if the backpropagation should stop
         errorpercentagethreshholdcount = 0
@@ -330,6 +354,9 @@ def backprop(models_variable_name,learning_rate,inputdata,correct_output_data,pe
             for y in range(len(models_variable_name[1][x])):
                 for i in range(len(models_variable_name[1][x][y])):
                     models_variable_name[1][x][y][i] = models_variable_name[1][x][y][i] - alpha_gradient[x][y][i]
-
         node_list.clear()
         alpha_gradient.clear()
+        iterations += 1
+        if iterations >= iteration:
+            print("Iteration limit of " + str(iteration) + " reached.\nPercentage error for each output: " + str(percent_error_list))
+            return None
