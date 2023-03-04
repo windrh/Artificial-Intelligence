@@ -1,0 +1,173 @@
+import Functions
+import sys
+
+print("Welcome to the Artificial Intelligence application created by William Hoffman.")
+print("Enter the command '/c' to get a list of available commands , 'guide' for guide, 'exit' to exit the application.")
+alphabet = "abcdefghijklmnopqrstuvwxyz"
+loadlist = []
+datasetlist = []
+error = 0
+learning_rate = 0
+iterations = 0
+while True:
+    try:
+        userinput = input("v(0.0.1): ")
+        if userinput == "exit":
+            print("Exiting Application.")
+            break
+
+        elif userinput == "/c": # == done
+            print(" exit : exits the application.") #
+            print(" guide : returns a guide catalog of numbers with associated topics.") #
+            print(" load mod .txt_file : with a .txt file name separated by a space loads a model into memory.") #
+            print(" memory : returns a list of the models and datasets inside of memory.") #
+            print(" generate : begins the process of generating a random model, then ONLY saves to memory once completed") #
+            print(" save model# : with a model number from memory separated by a space; saves the model to the respective .txt file. If no file is present for model, a prompt for a file name will be given.") #
+            print(" inspect model# : with a model number from memory separated by a space; gives statistics of the model.") #
+            print(" fp m model#: with a model number separated by a space; forward propagates a set of data manually entered into the command line, separated by commas.") #
+            print(" load ds .txt_file : with a .txt file name separated by a space loads a dataset into memory.") #
+            print(" set error .## : with a two number long decimal point after command, sets the acceptable % training error for training/backpropagation") #
+            print(" set lr #.### : with a four digit decimal number after the command, sets the learning rate of the backpropagation.") #
+            print(" set iterations #anylengthnumber# : with an integer of any length, sets the absolute limit for backpropagating.") #
+            print(" settings : will display the current settings for iterations, percent error, and learning rate for backpropagation.") #
+            print(" bp model# dataset# : with a loaded model and data set number, all 3 separated by single spaces; backpropagates the training data set through given model.") #
+            print(" reset model# : resets a model to it's originally loaded form in memory") #NEED TO DO
+
+        elif userinput[0:2] == "bp":
+            errorcount = 0
+            if alphabet.find(userinput[3]) > -1 or alphabet.find(userinput[5]) > -1:
+                errorcount += 1
+                if errorcount == 0:
+                    if type(userinput[3]) != int or type(userinput[5]) != int:
+                        errorcount += 1
+            if errorcount != 0:
+                print("Invalid model or dataset entered... please try command again.")
+            for element in datasetlist[int(userinput[5])][2]:
+                training_input = element[0]
+                correct_output = element[1]
+                Functions.backprop(loadlist[int(userinput[3])][2],learning_rate,training_input,correct_output,error,iterations)
+            print("Training completed.")
+
+        elif userinput[0:8] == "settings":
+            print("Learning rate: " + str(learning_rate) + ", error percentage allowed: " + str(error) + ", iterations of backpropagation: " + str(iterations) + ".")
+
+        elif userinput[0:14] == "set iterations":
+            errorcount = 0
+            for element in userinput[15:]:
+                if alphabet.find(element) > -1:
+                    errorcount += 1
+            if errorcount == 0:
+                iterations = int(userinput[15:])
+            else:
+                print("Invalid iteration number entered... please try command again.")
+
+        elif userinput[0:6] == "set lr":
+            errorcount = 0
+            for element in userinput[7:]:
+                if alphabet.find(element) > -1:
+                    errorcount += 1
+            if errorcount == 0:
+                learning_rate = float(userinput[7:])
+            else:
+                print("Invalid learning rate entered... please try command again.")
+
+        elif userinput[0:9] == "set error":
+            errorcount = 0
+            for element in userinput[10:]:
+                if alphabet.find(element) > -1:
+                    errorcount += 1
+            if errorcount == 0:
+                error = float(userinput[10:])
+            else:
+                print("Invalid error rate entered... please try command again.")
+
+        elif userinput[0:5] == "guide" and len(userinput) != 5:
+            number = int(userinput[6:])
+            a = open("guide.txt", 'r')
+            b = a.read()
+            a.close()
+            print(b.split(":")[(number * 2) + 1])
+
+        elif userinput[0:5] == "guide" and len(userinput) == 5:
+            a = open("guide.txt", 'r')
+            b = a.read()
+            a.close()
+            count = 0
+            modelcount = 0
+            for item in b.split(":"):
+                if count % 2 == 0 or count == 0:
+                    print("(" + str(modelcount) + "): " + item)
+                    modelcount += 1
+                count += 1
+            print("Insert the command 'guide #', with the # sign being the number of the section you want to access, to access that given section of the guide.")
+
+        elif userinput[0:4] == "fp m":
+            model = loadlist[int(userinput[5:])][2]
+            length_of_input = model[1][0]
+            print("Please enter a series of input data " + str(len(length_of_input)) + " long, separated by commas.")
+            tempinput = input("Inputs: ")
+            templist = []
+            check = False
+            alphabet = "abcdefghijklmnopqrstuvwxyz"
+            while check == False:
+                errorcount = 0
+                for item in tempinput.split(","):
+                    if alphabet.find(item) > -1:
+                        errorcount += 1
+                if len(tempinput.split(",")) != len(length_of_input):
+                    errorcount += 1
+                if errorcount == 0:
+                    check = True
+                else:
+                    print("Incorrect length or type of data values... try again")
+                    tempinput = input("Inputs: ")
+            for item in tempinput.split(","):
+                templist.append(int(item))
+            output = Functions.forward_prop(model,templist)
+            print("Results: " + str(output[-1]))
+
+        elif userinput[0:7] == "inspect":
+            model = loadlist[int(userinput[8:])][2]
+            nodecount = len(model[1][1][1]) * len(model[1][1])
+            activationstring = ""
+            for element in model[2]:
+                activationstring += str(element)
+            weightcount = 0
+            for x in range(len(model[1])):
+                for y in range(len(model[1][x])):
+                    for i in range(len(model[1][x][y])):
+                        weightcount += 1
+            print("Model ("+userinput[8:]+") Statistics: " + str(nodecount) + " Neurons, " + str(weightcount) + " Weights, Activation String: " + activationstring)
+
+        elif userinput[0:4] == "save":
+            if loadlist[int(userinput[5:])][1] != "randomly generated model":
+                Functions.store_model(loadlist[int(userinput[5:])][1],loadlist[int(userinput[5:])][2])
+            else:
+                tempfilename = input("Please provide a desired file name for this model to be stored into: ")
+                Functions.store_model(tempfilename,loadlist[int(userinput[5:])][2])
+            print("Model saved into respective file.")
+
+        elif userinput[0:8] == "generate":
+            loadlist.append((len(loadlist), "randomly generated model", Functions.produce_data(0)))
+            print("New Model loaded into memory; identity number: " + str(len(loadlist)-1))
+
+        elif userinput[0:8] == "load mod":
+            loadlist.append((len(loadlist), userinput[9:], Functions.produce_data(userinput[9:])))
+            print("New Model loaded into memory; identity number: " + str(len(loadlist)-1))
+
+        elif userinput[0:7] == "load ds":
+            datasetlist.append((len(datasetlist),userinput[8:], Functions.produce_data(userinput[8:])))
+            print("New dataset loaded into memory; identity number: " + str(len(datasetlist)-1))
+
+        elif userinput[0:6] == "memory":
+            print(str(len(loadlist)) + " Model(s) loaded:")
+            for i in loadlist:
+                print(" ("+str(i[0])+"): " + i[1])
+            print(""+str(len(datasetlist)) + " Dataset(s) loaded:")
+            for k in datasetlist:
+                print(" (" + str(k[0]) + "): " + k[1])
+
+        else:
+            print("Command not recognized.")
+    except:
+        print("Command error... try again: " + str(sys.exc_info()[1]))
