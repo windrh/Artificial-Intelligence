@@ -1,0 +1,28 @@
+Getting Started:
+This application is used for manipulating and training Artificial Intelligence models. Applications like these are useful because
+of the ability to dynamically save a model to storage from memory if it works and disregard it if the model doesn't. There is also the
+ability of this program to load multiple models and training sets at once to maximize the training experience.
+
+On surface glance, this may seem trivial, but actually programming models over and over again is a tedious task and having a
+command line program to do these functions allows you to generate and develop A.I. faster.
+
+It may be useful to input the /c command to look at some of the commands.
+:Training your first A.I.:
+To begin training your first Artificial Intelligence, insert the command 'generate'.
+:Training Data Formatting:
+Training data should look like the following inside your loaded text file; [[[inputs],[correct outputs]],[[inputs],[correct outputs]], etc...]
+:Why am I getting errors?:
+Errors may come from a variety of factors in the program, however, mainly from data errors.
+
+Tip 1 - There should be no values <1 in the data set unless they are statistically significant.
+Tip 2 - Small learning rates. Traditionally, .01 or .001 are very good to start with to prevent NaN values.
+Tip 3 - Error rates. I use .05 in testing as a threshold to stop calculations.
+Tip 4 - Ensure your model is big enough to encompass a meaningful relationship in the training data.
+
+:To-Do:
+Implement solutions for exploding weights.
+    - Gradient Clipping -
+    - Weight Clipping -
+    - Bias Differentiation -
+    - Implement the Reset command in my main text line program -
+    - Alphabetically order the commands when the prompt 'guide' is given
