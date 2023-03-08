@@ -8,21 +8,31 @@ command line program to do these functions allows you to generate and develop A.
 
 It may be useful to input the /c command to look at some of the commands.
 :Training your first A.I.:
-To begin training your first Artificial Intelligence, insert the command 'generate'.
+To begin training your first Artificial Intelligence, follow these steps:
+    - You need to give birth to a baby A.I. which we will train, to do this insert the command 'generate mod'.
+    - To train your baby, we need to give the A.I. data which it can use to learn.
+        In a .txt file that is in the same folder as this program, insert data according to this template;
+            [[[inputs],[correct outputs]],[[inputs],[correct outputs]], etc...]
+    - Now that we have the data to train your baby, load it into the program with the command 'load ds name_of_file.txt'.
+    - Some small adjustments must be put into the system before we train your baby, so insert the following commands;
+        'set lr .001'
+        'set iterations 10000'
+        'set error .005'
+    - After you have finished setting up your system; insert the command 'bp 0 0'. This will take some time depending on how many inputs you have!
+    - Once the message "Training Completed" has appeared, you are done training. Test out your mature A.I. with the command 'fp m 0' and see how accurate it is!
 :Training Data Formatting:
 Training data should look like the following inside your loaded text file; [[[inputs],[correct outputs]],[[inputs],[correct outputs]], etc...]
 :Why am I getting errors?:
 Errors may come from a variety of factors in the program, however, mainly from data errors.
 
-Tip 1 - There should be no values <1 in the data set unless they are statistically significant.
-Tip 2 - Small learning rates. Traditionally, .01 or .001 are very good to start with to prevent NaN values.
-Tip 3 - Error rates. I use .05 in testing as a threshold to stop calculations.
+Tip 1 - There should be no 0 values in the data set unless they are statistically significant.
+Tip 2 - Small learning rates. Traditionally, .01 or .001 are very good to start with and will prevent NaN values.
+Tip 3 - Error rates. I use .00001 in testing as a threshold to stop calculations. However, you are able to put in 0 as the error rate, meaning your model will train based off iterations
 Tip 4 - Ensure your model is big enough to encompass a meaningful relationship in the training data.
 
 :To-Do:
-Implement solutions for exploding weights.
+Implement solutions for current failures in the implementation
     - Gradient Clipping -
     - Weight Clipping -
-    - Bias Differentiation -
     - Implement the Reset command in my main text line program -
-    - Alphabetically order the commands when the prompt 'guide' is given
+    - Alphabetically order the commands when the prompt 'guide' is given -
