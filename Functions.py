@@ -20,7 +20,7 @@ def LeakyReLU(x):
 #function takes a value (assuming it is a value derived from the ReLU function) and gives the derivative that value.
 def dLeakyReLU(x):
     if x < 0:
-        return -.1
+        return .1
     else:
         return 1
 
@@ -43,7 +43,7 @@ def initialize_starting_weights(number_inputs, length_of_hidden_layers, num_outp
     temporarylist = []
     for i in range(number_inputs):
         for x in range(length_of_hidden_layers):
-            temporarylist.append(weight_initialization(number_inputs))
+            temporarylist.append(weight_initialization(number_inputs)) #ABS USED TO MAKE WEIGHTS NOT NEGATIVE ##
         temptable.append(copy.deepcopy(temporarylist))
         temporarylist.clear()
     finallist.append(copy.deepcopy(temptable))
@@ -51,14 +51,14 @@ def initialize_starting_weights(number_inputs, length_of_hidden_layers, num_outp
     for i in range(number_of_hidden_layers-1):
         for x in range(length_of_hidden_layers):
             for y in range(length_of_hidden_layers):
-                temporarylist.append(weight_initialization(number_inputs))
+                temporarylist.append(weight_initialization(number_inputs)) #ABS USED TO MAKE WEIGHTS NOT NEGATIVE? #
             temptable.append(copy.deepcopy(temporarylist))
             temporarylist.clear()
         finallist.append(copy.deepcopy(temptable))
         temptable.clear()
     for i in range(length_of_hidden_layers):
         for x in range(num_output_nodes):
-            temporarylist.append(weight_initialization(number_inputs))
+            temporarylist.append(weight_initialization(number_inputs)) ##ABSOLUTE VALUESSSSS###
         temptable.append(copy.deepcopy(temporarylist))
         temporarylist.clear()
     finallist.append(copy.deepcopy(temptable))
@@ -220,7 +220,7 @@ def backprop(models_variable_name,learning_rate,inputdata,correct_output_data,pe
         errorlist = [] #this is now a list of error, with [0] being the error for a node: x = max, y = 0, and so on....
         percent_error_list = [] #this list for determining if the while loop should be stopped
         for mark in range(len(inputresult[-1])):
-            errorlist.append(inputresult[-1][mark] - correct_output_data[mark])
+            errorlist.append(2*(inputresult[-1][mark] - correct_output_data[mark]))
             percent_error_list.append(abs((inputresult[-1][mark] - correct_output_data[mark])/correct_output_data[mark])*100)
         for output in inputresult[-1]:
             if type(output) != int and type(output) != float:
@@ -233,6 +233,7 @@ def backprop(models_variable_name,learning_rate,inputdata,correct_output_data,pe
                 errorpercentagethreshholdcount += 1
         if errorpercentagethreshholdcount == 0:
             error = True
+        #################################################################################################no change needed above line################################################################
 
         #actual class definition for the nodes we use to find derivatives dynamically
         class Node(object):
@@ -248,6 +249,7 @@ def backprop(models_variable_name,learning_rate,inputdata,correct_output_data,pe
                 self.deactivatedvalue = self.valuefinder(self.activation_function, self.activated_value) #Derivative of the node's final output for gradient calculations
                 self.name_of_node_list = name_of_node_list #VARIABLE | this variable represents the list that this class is being stored into
                 self.name_of_value_storage_list = name_of_value_storage_list
+
 
             #simple function to calculate the derivative of the activated value needed for the gradient
             def valuefinder(self,act_funct,act_value):
@@ -271,7 +273,7 @@ def backprop(models_variable_name,learning_rate,inputdata,correct_output_data,pe
                                     templist.append(value)
                                 templist.append(self.deactivatedvalue) #appends its own data, this is the derivative of activation function
                                 templist.append(item) #appends its own data part 2, this data is the specific WEIGHT coordinate for backprop
-                                element.accept(templist.copy()) #calls on the matching node's "accept" function to transfer data
+                                element.accept(templist.copy(),False) #calls on the matching node's "accept" function to transfer data
                                 templist.clear() #clears out list to reduce memory usage
                 self.storage.clear() # clears out the storage so that future items can be stored in later derivative calculations
 
@@ -295,10 +297,20 @@ def backprop(models_variable_name,learning_rate,inputdata,correct_output_data,pe
                     self.storage.clear()
 
             #accepts a list of coordinates and deactivated values into self.storage for future functions
-            def accept(self,listinput):
-                for element in listinput:
-                    self.storage.append(element)
-                self.propagate()
+            def accept(self,listinput,beginbool):
+                if beginbool == False:
+                    for element in listinput:
+                        self.storage.append(element)
+                    self.propagate()
+                elif beginbool == True: #begin bool is basically just made to see if the value is from the start of the derivative chain
+                    if listinput[0][0] == 0: #if the matrix of the listinput is 0, this means there is no node with an outgoing weight coordinate like this: meaning it would have to be a raw input
+                        self.storage.append(inputdata[listinput[0][1]]) ##another reference to something not defined in class and reliant upon the backprop function (inputdata)
+                    else: #if the weight is not in the first matrix, then we can use an activated value from a previous node to get the first derivative of the weight
+                        for previousnode in self.name_of_node_list:
+                            for outgoingvalue in previousnode.outgoinglist:
+                                if outgoingvalue == listinput[0]:
+                                    self.storage.append(previousnode.activated_value)
+                    self.propagate()
 
 
         #building the list of nodes to be used as objects
@@ -336,9 +348,9 @@ def backprop(models_variable_name,learning_rate,inputdata,correct_output_data,pe
                 temporarylist2 = [] #each row
                 for k in range(len(models_variable_name[1][x][y])): #k represents the column
                     for node in node_list: #for each node
-                        for item in node.incominglist: #search that node's items in the incoming list
+                        for item in node.incominglist: #search that node's items in the incoming list ############edit here the procedure after finding a target weight##############
                             if item == (x,y,k): #if we have a match from the weight we are finding the derivative for, we then make the node accept it
-                                node.accept([(x,y,k)])
+                                node.accept([(x,y,k)],True)
                     tempvalue = 0
                     for value in value_storage_list: #must make sure an actual value is in value storage list: more manipulation on the node class part to make them append just values now...
                         tempvalue += value
@@ -354,9 +366,34 @@ def backprop(models_variable_name,learning_rate,inputdata,correct_output_data,pe
             for y in range(len(models_variable_name[1][x])):
                 for i in range(len(models_variable_name[1][x][y])):
                     models_variable_name[1][x][y][i] = models_variable_name[1][x][y][i] - alpha_gradient[x][y][i]
+
+        #we begin finding the gradient for the biases in the network
+        beta_gradient = []
+        for a in range(len(models_variable_name[0])):
+            tempbiaslist = []
+            for b in range(len(models_variable_name[0][a])):
+                for biasnode in node_list:
+                    if biasnode.x == a and biasnode.y == b:
+                        biasnode.accept([],False)
+                tempbiasvalue = 0
+                for biasvalue in value_storage_list:
+                    tempbiasvalue += biasvalue
+                tempbiaslist.append(tempbiasvalue * learning_rate)
+                value_storage_list.clear()
+            beta_gradient.append(tempbiaslist.copy())
+            tempbiaslist.clear()
+
+        #updating the biases according to gradient within the network
+        for aa in range(len(models_variable_name[0])):
+            for bb in range(len(models_variable_name[0][aa])):
+                models_variable_name[0][aa][bb] = models_variable_name[0][aa][bb] - beta_gradient[aa][bb]
+
+        #coding stuff
         node_list.clear()
         alpha_gradient.clear()
+        beta_gradient.clear()
         iterations += 1
+
         if iterations >= iteration:
             print("Iteration limit of " + str(iteration) + " reached.\nPercentage error for each output: " + str(percent_error_list))
             return None
