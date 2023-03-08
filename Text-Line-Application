@@ -21,7 +21,7 @@ while True:
             print(" guide : returns a guide catalog of numbers with associated topics.") #
             print(" load mod .txt_file : with a .txt file name separated by a space loads a model into memory.") #
             print(" memory : returns a list of the models and datasets inside of memory.") #
-            print(" generate : begins the process of generating a random model, then ONLY saves to memory once completed") #
+            print(" generate mod : begins the process of generating a random model, then ONLY saves to memory once completed") #
             print(" save model# : with a model number from memory separated by a space; saves the model to the respective .txt file. If no file is present for model, a prompt for a file name will be given.") #
             print(" inspect model# : with a model number from memory separated by a space; gives statistics of the model.") #
             print(" fp m model#: with a model number separated by a space; forward propagates a set of data manually entered into the command line, separated by commas.") #
@@ -144,10 +144,10 @@ while True:
                 Functions.store_model(loadlist[int(userinput[5:])][1],loadlist[int(userinput[5:])][2])
             else:
                 tempfilename = input("Please provide a desired file name for this model to be stored into: ")
-                Functions.store_model(tempfilename,loadlist[int(userinput[5:])][2])
+                Functions.store_model(tempfilename+'.txt',loadlist[int(userinput[5:])][2])
             print("Model saved into respective file.")
 
-        elif userinput[0:8] == "generate":
+        elif userinput[0:12] == "generate mod":
             loadlist.append((len(loadlist), "randomly generated model", Functions.produce_data(0)))
             print("New Model loaded into memory; identity number: " + str(len(loadlist)-1))
 
